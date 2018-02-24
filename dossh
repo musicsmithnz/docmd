@@ -1,0 +1,15 @@
+#!/bin/bash
+
+
+keys=~/.ssh/digitalocean/keys
+
+doctl compute droplet list; 
+read -p "select id:" id;
+ip=$(cat $keys | grep $id | cut -f2);
+path=$(cat $keys | grep $id | cut -f3); 
+#ssh -p 34533 root@$ip -i $path
+ssh -p 22 root@$ip -i $path
+
+echo path: $path
+echo ip: $ip
+echo id: $id
