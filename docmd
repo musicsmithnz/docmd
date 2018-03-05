@@ -12,6 +12,7 @@ import threading
 import os
 
 ssh_key_dir="$HOME/.ssh/digitalocean"
+ssh_key_dir="/home/raymond/.ssh/digitalocean"
 hosts = []
 connections = []
 
@@ -20,273 +21,278 @@ connections = []
 scripts=[['web2py with templates','https://raw.githubusercontent.com/musicsmithnz/setup_scripts/master/main.sh'],['web2py','https://raw.githubusercontent.com/musicsmithnz/setup_scripts/master/servers/web2py_setup'],['download themes','https://raw.githubusercontent.com/musicsmithnz/setup_scripts/master/theme_management/download_themes'],['install themes','https://raw.githubusercontent.com/musicsmithnz/setup_scripts/master/theme_management/install_theme']]
 
 def authenticate():
-	auth_cmd="doctl auth init " + arg
-	auth_cmd=shlex.split(auth_cmd)
-	auth_proc=sp.Popen(auth_cmd,stdout=sp.PIPE,stderr=sp.PIPE)
-	try:
-		out, err = auth_proc.communicate(timeout=15)
-	except TimeoutExpired:
-		list_proc.kill()
-	output=out.decode("utf-8")
-	print(output)
+    auth_cmd="doctl auth init " + arg
+    auth_cmd=shlex.split(auth_cmd)
+    auth_proc=sp.Popen(auth_cmd,stdout=sp.PIPE,stderr=sp.PIPE)
+    try:
+        out, err = auth_proc.communicate(timeout=15)
+    except TimeoutExpired:
+        list_proc.kill()
+    output=out.decode("utf-8")
+    print(output)
 
 def cmd_exec(cmd):
-	cmd=shlex.split(cmd)
-	cmd_proc=sp.Popen(cmd,stdout=sp.PIPE,stderr=sp.PIPE)	
-	try:
-		out, err = cmd_proc.communicate(timeout=15)
-	except TimeoutExpired:
-		cmd_proc.kill()
-	output=out.decode("utf-8")
-	error=err.decode("utf-8")
-	if 'hint: run \'doctl auth init\'' in error:
-		answer=input("You have not been authenticated, would you like to authenticate?")
-		if answer=="y":
-			cmd_exec("doctl auth init xxx")
-	if output != "":
-		return output
-	elif error != "":
-		return error
-	else:
-		return output
+    print("cmd called: " + cmd)
+    cmd=shlex.split(cmd)
+    cmd_proc=sp.Popen(cmd,stdout=sp.PIPE,stderr=sp.PIPE)    
+    try:
+        out, err = cmd_proc.communicate(timeout=15)
+    except TimeoutExpired:
+        cmd_proc.kill()
+    output=out.decode("utf-8")
+    error=err.decode("utf-8")
+    print("out: " + output)
+    print("err: " + str(err,'utf-8'))
+    if 'hint: run \'doctl auth init\'' in error:
+        answer=input("You have not been authenticated, would you like to authenticate?")
+        if answer=="y":
+            cmd_exec("doctl auth init xxx")
+    if output != "":
+        return output
+    elif error != "":
+        return error
+    else:
+        return output
 
 def print_information(arg):
-	possible_args=['droplet','image','region','volume','size','domain']
-	if arg in possible_args:
-		list_cmd="doctl compute " + arg + " list"
-		output=cmd_exec(list_cmd)
-	if output != "":
-		print("_________________________________________________________________________________________________________________________________________________________________")
-		print(output)
-		print("_________________________________________________________________________________________________________________________________________________________________")
-	else:
-		print("please say what you would like to list")
+    possible_args=['droplet','image','region','volume','size','domain']
+    if arg in possible_args:
+        list_cmd="doctl compute " + arg + " list"
+        output=cmd_exec(list_cmd)
+    if output != "":
+        print("_________________________________________________________________________________________________________________________________________________________________")
+        print(output)
+        print("_________________________________________________________________________________________________________________________________________________________________")
+    else:
+        print("please say what you would like to list")
 
 def delete_droplet():
-	print_information('droplet')
-	id=input("please select an id:\t")
-	delete_cmd="doctl compute droplet delete " + id
-	cmd_exec(delete_cmd)
-#	print(cmd_exec(delete_cmd))
+    print_information('droplet')
+    id=input("please select an id:\t")
+    delete_cmd="doctl compute droplet delete " + id
+    cmd_exec(delete_cmd)
+#    print(cmd_exec(delete_cmd))
 
 def create_droplet(*args):
-	#DEFINING PARAMETERS
-	print("defining parameters...")
-	droplet_parameters={'region':'','image':'','size':''}
-	load_predefined_parameters=False
-	for arg in args:
-		if int(arg) == int(1):
-			droplet_parameters['region']="sgp1"
-			droplet_parameters['image']="25045709"
-			droplet_parameters['size']="2gb"
-			load_predefined_parameters=True
-			host_name="node1"
-		if int(arg) == int(2):
-			droplet_parameters['region']="sgp1"
-			droplet_parameters['image']="22995882"
-			droplet_parameters['size']="2gb"
-			load_predefined_parameters=True
-			host_name="node1"
-	if not load_predefined_parameters:
-		for parameter in droplet_parameters:
-			print_information(parameter)
-			user_input=input("please select an option:\t")
-			droplet_parameters[parameter]=user_input
-			print(droplet_parameters)
-		host_name=input("choose a name for the host and key:")
-	
-	timestamp = str(datetime.datetime.now().timestamp()).replace(".","")
-	ssh_key_name = host_name+"_"+timestamp
-	ssh_key_path = ssh_key_dir+"/"+ssh_key_name
-	
-	#CREATING KEY
-	print("creating key...")
-	if cmd_exec("file -b ssh_key_dir") != "directory":
-		result = cmd_exec("mkdir -p ssh_key_dir" )
-	cmd_ssh_key = "ssh-keygen -t rsa -N \"\" -f "+ssh_key_path
-	print(cmd_exec(cmd_ssh_key))
-	time.sleep(4)
-		
-	#IMPORT KEY
-	print("importing key...")
-	cmd_import_ssh_key = "doctl compute ssh-key import "+ssh_key_name+"_key --public-key-file "+ssh_key_path+".pub"
-	ssh_key_info = cmd_exec(cmd_import_ssh_key)
+    #DEFINING PARAMETERS
+    print("defining parameters...")
+    droplet_parameters={'region':'','image':'','size':''}
+    load_predefined_parameters=False
+    for arg in args:
+        if int(arg) == int(1):
+            droplet_parameters['region']="sgp1"
+            droplet_parameters['image']="25045709"
+            droplet_parameters['size']="2gb"
+            load_predefined_parameters=True
+            host_name="newsshkey1"
+        if int(arg) == int(2):
+            droplet_parameters['region']="sgp1"
+            droplet_parameters['image']="22995882"
+            droplet_parameters['size']="2gb"
+            load_predefined_parameters=True
+            host_name="node1"
+    if not load_predefined_parameters:
+        for parameter in droplet_parameters:
+            print_information(parameter)
+            user_input=input("please select an option:\t")
+            droplet_parameters[parameter]=user_input
+            print(droplet_parameters)
+        host_name=input("choose a name for the host and key:")
+    
+    timestamp = str(datetime.datetime.now().timestamp()).replace(".","")
+    ssh_key_name = host_name+"_"+timestamp
+    ssh_key_path = ssh_key_dir+"/"+ssh_key_name
+    
+    #CREATING KEY
+    print("creating key...")
+    if cmd_exec("file -b ssh_key_dir") != "directory":
+        result = cmd_exec("mkdir -p ssh_key_dir" )
+    cmd_ssh_key = "ssh-keygen -t rsa -N \"\" -f "+ssh_key_path
+    print("cmd_ssh_key: "+cmd_ssh_key)
+    print(cmd_exec(cmd_ssh_key))
+    time.sleep(4)
         
-	#GET FINGERPRINT
-	if ssh_key_info:
-		fingerprint = ssh_key_info.splitlines()[1].split()[2]
-	#	print(fingerprint)
-		
-	#CREATE DROPLET	
-		print("creating droplet...")
-		cmd_create="doctl compute droplet create "+host_name+" --size "+droplet_parameters['size']+"  --region "+droplet_parameters['region']+" --image "+droplet_parameters['image']+" --ssh-keys "+fingerprint+" -o json"
-		output=cmd_exec(cmd_create)	
-		
-		droplet_info_json=json.loads(output)
-		droplet_id=droplet_info_json[0]['id']
-		
-		print("waiting for host to spawn...")
-		time.sleep(10)
-		print("getting ip of new host...")
-		droplet_info_json=json.loads(cmd_exec("doctl compute droplet list -o json"))
-		for i in droplet_info_json:	
-			if int(i['id']) == int(droplet_id):
-				droplet_ip=i['networks']['v4'][0]['ip_address']
-		print("writing key and ip information to file...")
-		cmd_exec("touch "+ssh_key_dir+"/keys")
-		keys=open(ssh_key_dir+"/keys","a")
-		keys.write(str(droplet_id)+"\t"+str(droplet_ip)+"\t"+ssh_key_path+"\n\r")		
+    #IMPORT KEY
+    print("importing key...")
+    cmd_import_ssh_key = "doctl compute ssh-key import "+ssh_key_name+"_key --public-key-file "+ssh_key_path+".pub"
+    ssh_key_info = cmd_exec(cmd_import_ssh_key)
+    print("ssh_key_info: " + ssh_key_info)
+        
+    #GET FINGERPRINT
+    if ssh_key_info:
+        fingerprint = ssh_key_info.splitlines()[1].split()[2]
+    #    print(fingerprint)
+        
+    #CREATE DROPLET    
+        print("creating droplet...")
+        cmd_create="doctl compute droplet create "+host_name+" --size "+droplet_parameters['size']+"  --region "+droplet_parameters['region']+" --image "+droplet_parameters['image']+" --ssh-keys "+fingerprint+" -o json"
+        output=cmd_exec(cmd_create)    
+        
+        droplet_info_json=json.loads(output)
+        droplet_id=droplet_info_json[0]['id']
+        
+        print("waiting for host to spawn...")
+        time.sleep(10)
+        print("getting ip of new host...")
+        droplet_info_json=json.loads(cmd_exec("doctl compute droplet list -o json"))
+        for i in droplet_info_json:    
+            if int(i['id']) == int(droplet_id):
+                droplet_ip=i['networks']['v4'][0]['ip_address']
+        print("writing key and ip information to file...")
+        cmd_exec("touch "+ssh_key_dir+"/keys")
+        keys=open(ssh_key_dir+"/keys","a")
+        keys.write(str(droplet_id)+"\t"+str(droplet_ip)+"\t"+ssh_key_path+"\n\r")        
 
 def run_command(command):
-	print("command:\t",command)
-	threads = []
-	for host, conn in zip(hosts, connections):
-		t = threading.Thread(target=worker, args=(host,conn,command))
-		t.start()
-		threads.append(t)
-	for t in threads:
-		t.join()
+    print("command:\t",command)
+    threads = []
+    for host, conn in zip(hosts, connections):
+        t = threading.Thread(target=worker, args=(host,conn,command))
+        t.start()
+        threads.append(t)
+    for t in threads:
+        t.join()
 
 def test_func():
-	pass
+    pass
 
 def exit():
-	print('bye bye :)')
-	sys.exit()
+    print('bye bye :)')
+    sys.exit()
 
 def worker(host, conn, command):
-	stdin, stdout, stderr = conn.exec_command(command)
-	#sin=stdin.read().decode("utf-8").splitlines()
-	sout=stdout.read().decode("utf-8").splitlines()
-	serr=stderr.read().decode("utf-8").splitlines()
-	#stdin.close()
-	for line in sout:
-		print("ID.",host,":sout>\t",line)
-	for line in serr:
-		print("ID.",host,":serr>\t",line)
-	
+    stdin, stdout, stderr = conn.exec_command(command)
+    #sin=stdin.read().decode("utf-8").splitlines()
+    sout=stdout.read().decode("utf-8").splitlines()
+    serr=stderr.read().decode("utf-8").splitlines()
+    #stdin.close()
+    for line in sout:
+        print("ID.",host,":sout>\t",line)
+    for line in serr:
+        print("ID.",host,":serr>\t",line)
+    
 def script_exec(script_number):
-	print("script exec called")
-	uri=scripts[script_number][1]
-	scriptname=os.path.basename(uri)
-	run_command('wget --output-document="'+scriptname+'" '+uri)
-	run_command("chmod +x *")
-	run_command("./"+scriptname)
-	print(scripts[script_number])
-	print("script exec finished")
-	
+    print("script exec called")
+    uri=scripts[script_number][1]
+    scriptname=os.path.basename(uri)
+    run_command('wget --output-document="'+scriptname+'" '+uri)
+    run_command("chmod +x *")
+    run_command("./"+scriptname)
+    print(scripts[script_number])
+    print("script exec finished")
+    
 class DoctlShell(cmd.Cmd):
-	intro = 'welcome to the doctl shell!'
-	prompt = 'doctl> '
+    intro = 'welcome to the doctl shell!'
+    prompt = 'doctl> '
 
-	def default(self, line):
-        	cmd, arg, line = self.parseline(line)
-        	func = [getattr(self, n) for n in self.get_names() if n.startswith('do_' + cmd)]
-        	if func: # maybe check if exactly one or more elements, and tell the user
-        		return func[0](arg)
+    def default(self, line):
+            cmd, arg, line = self.parseline(line)
+            func = [getattr(self, n) for n in self.get_names() if n.startswith('do_' + cmd)]
+            if func: # maybe check if exactly one or more elements, and tell the user
+                return func[0](arg)
 
-	def do_ssh(self,something):
-		print(something)
-		ssh()
+    def do_ssh(self,something):
+        print(something)
+        ssh()
 
-	def do_quit(self,something):
-		exit()
+    def do_quit(self,something):
+        exit()
 
-	def do_test(self,function):
-		test_func()	
+    def do_test(self,function):
+        test_func()    
 
-	def do_droplet(self,arg_string):
-		'list droplets, images, regions, domains, volumes or sizes'
-		space_index=arg_string.find(" ")
-		arg2=""
-		if not space_index == -1:
-			function=arg_string[:space_index]
-			arg2=arg_string[space_index+1:]
-		else: 
-			function=arg_string
-		if function=='list':
-			print_information('droplet')
-		elif function=='delete':
-			delete_droplet()
-		elif function=='create':		
-			create_droplet(*arg2)
+    def do_droplet(self,arg_string):
+        'list droplets, images, regions, domains, volumes or sizes'
+        space_index=arg_string.find(" ")
+        arg2=""
+        if not space_index == -1:
+            function=arg_string[:space_index]
+            arg2=arg_string[space_index+1:]
+        else: 
+            function=arg_string
+        if function=='list':
+            print_information('droplet')
+        elif function=='delete':
+            delete_droplet()
+        elif function=='create':        
+            create_droplet(*arg2)
 
-	def do_image(self,function):
-		'list droplets, images, regions, domains, volumes or sizes'
-		print_information('image')
+    def do_image(self,function):
+        'list droplets, images, regions, domains, volumes or sizes'
+        print_information('image')
 
-	def do_region(self,function):
-		'list droplets, images, regions, domains, volumes or sizes'
-		print_information('region')
+    def do_region(self,function):
+        'list droplets, images, regions, domains, volumes or sizes'
+        print_information('region')
 
-	def do_size(self,function):
-		'list droplets, images, regions, domains, volumes or sizes'
-		print_information('size')
+    def do_size(self,function):
+        'list droplets, images, regions, domains, volumes or sizes'
+        print_information('size')
 
-	def do_domain(self,function):
-		'list droplets, images, regions, domains, volumes or sizes'
-		print_information('domain')
+    def do_domain(self,function):
+        'list droplets, images, regions, domains, volumes or sizes'
+        print_information('domain')
 
-	def do_volume(self,function):
-		'list droplets, images, regions, domains, volumes or sizes'
-		print_information('volume')
+    def do_volume(self,function):
+        'list droplets, images, regions, domains, volumes or sizes'
+        print_information('volume')
 
-	def do_add_host(self, id): #add host to list 
-		"""Add the host to the host list"""
-		if id:
-			hosts.append(id)
-		else:
-			print("usage: host ")
+    def do_add_host(self, id): #add host to list 
+        """Add the host to the host list"""
+        if id:
+            hosts.append(id)
+        else:
+            print("usage: host ")
 
-	def do_connect(self, args):
-		"""Connect to all hosts in the hosts list"""
-		print("connecting...")
-		print("reading host list...")
-		keys=open(ssh_key_dir+"/keys","r")
-		lines=keys.readlines();
-		for host_id in hosts:
-			print("setting up ssh client...")
-			client = paramiko.SSHClient()
-			print("setting missing host key policy")
-			client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-			print("looking up key information")
-			info=[s for s in lines if host_id in s]
-			id, ip, key_path=info[0].split()
-			mykey=paramiko.RSAKey.from_private_key_file(key_path)
+    def do_connect(self, args):
+        """Connect to all hosts in the hosts list"""
+        print("connecting...")
+        print("reading host list...")
+        keys=open(ssh_key_dir+"/keys","r")
+        lines=keys.readlines();
+        for host_id in hosts:
+            print("setting up ssh client...")
+            client = paramiko.SSHClient()
+            print("setting missing host key policy")
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            print("looking up key information")
+            info=[s for s in lines if host_id in s]
+            id, ip, key_path=info[0].split()
+            mykey=paramiko.RSAKey.from_private_key_file(key_path)
 
-			print("host id:\t", id)
-			print("host ip:\t", ip)
-			print("username:\t", "root")
-			print("pkey:\t",mykey)
-			print("connecting to server...")
-			client.connect(ip, username='root', pkey=mykey)
-			connections.append(client)
-			print("connection added, you can run a command...")
+            print("host id:\t", id)
+            print("host ip:\t", ip)
+            print("username:\t", "root")
+            print("pkey:\t",mykey)
+            print("connecting to server...")
+            client.connect(ip, username='root', pkey=mykey)
+            connections.append(client)
+            print("connection added, you can run a command...")
 
-	def do_run_command(self, command):
-		"""run Execute this command on all hosts in the list"""
-		if command:
-			run_command(command)
-		else:
-			print("usage: run ")
+    def do_run_command(self, command):
+        """run Execute this command on all hosts in the list"""
+        if command:
+            run_command(command)
+        else:
+            print("usage: run ")
 
-	def do_run_script(self, script_number):
-		"""run a script on all hosts"""
-		print("length of scripts:",len(scripts))
-		if not script_number:
-			for i in range(0,len(scripts)):
-				print(i,') ',scripts[i][0],':\t',scripts[i][1])
-			script_number=input("please select which script you wish to run:\t")
-		if script_number:
-			script_exec(int(script_number))
-		else:
-			print("usage: must provide script number")
+    def do_run_script(self, script_number):
+        """run a script on all hosts"""
+        print("length of scripts:",len(scripts))
+        if not script_number:
+            for i in range(0,len(scripts)):
+                print(i,') ',scripts[i][0],':\t',scripts[i][1])
+            script_number=input("please select which script you wish to run:\t")
+        if script_number:
+            script_exec(int(script_number))
+        else:
+            print("usage: must provide script number")
 
-	def do_close(self, args):
-		for conn in connections:
-			conn.close()
+    def do_close(self, args):
+        for conn in connections:
+            conn.close()
 
-	def emptyline(self):
-		pass
+    def emptyline(self):
+        pass
 
 DoctlShell().cmdloop("type help for help")
